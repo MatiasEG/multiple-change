@@ -7,6 +7,7 @@ import java.util.List;
 
 import sets.CredibilityElement;
 
+// Lexicographic Selection Function
 public class LSF<A, C> implements IncisionFunction<A, C> {
 	
 	private Comparator<A> comparator;
@@ -43,7 +44,20 @@ public class LSF<A, C> implements IncisionFunction<A, C> {
 			}
 			toReturn.add(min);
 		}
-		
+
+		// TODO With merge toReturn have repeated credibility elements and fail in execution
+		// How to fix this?
+		// Modified code merge ---------------------------------
+		for(int i = toReturn.size()-1; i>=0; i--) {
+			for(int j = 0; j<i; j++){
+				if(toReturn.get(i).equals(toReturn.get(j))){
+					toReturn.remove(i);
+					break;
+				}
+			}
+		}
+		// ---------------------------------------------------
+
 		return toReturn;
 	}
 

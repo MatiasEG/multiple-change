@@ -1,33 +1,80 @@
 package incisionFunctions;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import sets.CredibilityElement;
+import sets.CredibilityOrder;
 
 // Least Credible Selection Function
-public class LCSF<C, A> implements IncisionFunction<A, C> {
+public class GLCSF<C, A> implements IncisionFunction<A, C> {
 	
 	private Comparator<A> comparator;
-	
-	public LCSF(Comparator<A> comparator) {
+	private CredibilityOrder<Integer, Integer> filter1, filter2;
+
+	public GLCSF(Comparator<A> comparator) {
 		this.comparator = comparator;
 	}
-	
+
+	public void setFilters(CredibilityOrder<Integer, Integer> co1, CredibilityOrder<Integer, Integer> co2){
+		filter1 = co1;
+		filter2 = co2;
+	}
+
 	@Override
 	public List<CredibilityElement<A>> select(List<List<CredibilityElement<A>>> kernelSet) {
 		List<CredibilityElement<A>> toReturn = new ArrayList<CredibilityElement<A>>();
+		boolean alreadySelected;
 		for(List<CredibilityElement<A>> kernel : kernelSet) {
-			toReturn.add( leastCredible(kernel) );
+			List<CredibilityElement<A>> selected = splitCredibilityElements(kernel);
+			for(CredibilityElement<A> ceSelected : selected){
+				alreadySelected = false;
+				for(CredibilityElement<A> ce : toReturn) {
+					if(ce.equals(ceSelected)) {
+						alreadySelected = true;
+						break;
+					}
+				}
+				if (!alreadySelected)
+					toReturn.addAll(selected);
+			}
 		}
 		
 		return toReturn;
 	}
-	
+
+	private List<CredibilityElement<A>> splitCredibilityElements(List<CredibilityElement<A>> kernel){
+		List<CredibilityElement<A>> toReturn = new ArrayList<>();
+		List<CredibilityElement<A>> kernel1 = new ArrayList<>();
+		List<CredibilityElement<A>> kernel2 = new ArrayList<>();
+
+		A most;
+		A less;
+		for(CredibilityElement<A> element : kernel){
+			most = element.getMostCredible();
+			less = element.getLessCredible();
+			// TODO ask about this casting
+			if (filter1.containsCredibilityElement((CredibilityElement<Integer>) element)) // (actual > prev) ; (prev-->actual)
+				kernel1.add(new CredibilityElement<A>(most, less));
+			else
+				kernel2.add(new CredibilityElement<A>(most, less));
+		}
+
+		// TODO delete System.out.println
+		System.out.println("<---------------------------------------->");
+		System.out.println("alpha --> "+filter1.relationSet());
+		System.out.println("beta --> "+filter2.relationSet());
+		System.out.println("Kernel --> "+kernel);
+		System.out.println("Elements from O1 Kernel --> "+kernel1);
+		System.out.println("Elements from O2 Kernel --> "+kernel2);
+
+		toReturn.add(leastCredible(kernel1));
+		toReturn.add(leastCredible(kernel2));
+
+		System.out.println("Selected credibility elements from kAlpha and kBeta --> "+toReturn);
+
+		return toReturn;
+	}
+
 	private CredibilityElement<A> leastCredible (List<CredibilityElement<A>> kernel){
 		Map<A, List<CredibilityElement<A>>> agentToTuples = new HashMap<A, List<CredibilityElement<A>>>();
 		Map<CredibilityElement<A>, Boolean> visited = new HashMap<CredibilityElement<A>, Boolean>();

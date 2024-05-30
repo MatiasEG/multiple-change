@@ -34,14 +34,25 @@ public class JohnsonBasedKernelDetector<A, C, E> {
     private Map<A, Integer> vLowlink = null;
     private ArrayDeque<A> path = null;
     private Set<A> pathSet = null;
-    
+
+    // Type of operation
+    // Modified code merge ---------------------------------
+    private boolean revision;
+    // ---------------------------------------------------
+
     // Modified code -------------------------------------
     public JohnsonBasedKernelDetector(Graph<A, E> graph, CredibilityOrder<A,C> filter){
         this.graph = graph;
         this.filter = filter;
     }
     // ---------------------------------------------------
-    
+
+    // Modified code merge -------------------------------------
+    public void setOperationType(boolean isRevision) {
+        revision = isRevision;
+    }
+    // ---------------------------------------------------
+
     // Modified code -------------------------------------
     public List<List<CredibilityElement<A>>> findKernels(){
    	// ---------------------------------------------------
@@ -320,24 +331,36 @@ public class JohnsonBasedKernelDetector<A, C, E> {
     	A first = it.next();
     	A prev = first;
     	A actual;
-    	
-    	while(it.hasNext()) {
-    		actual = it.next();
-    		if (!filter.containsCredibilityElement(actual, prev)) // (actual > prev) ; (prev-->actual)
-    			toReturn.add(new CredibilityElement<A>(actual, prev)); 
-    		prev = actual;
-    	}
-    	
-    	if (!filter.containsCredibilityElement(first, prev))
-    		toReturn.add(new CredibilityElement<A>(first, prev)); // (first > prev) ; (prev-->first)
-    	
+
+        // Modified code merge ---------------------------------
+        if(revision) {
+            while (it.hasNext()) {
+                actual = it.next();
+                if (!filter.containsCredibilityElement(actual, prev)) // (actual > prev) ; (prev-->actual)
+                    toReturn.add(new CredibilityElement<A>(actual, prev));
+                prev = actual;
+            }
+
+            if (!filter.containsCredibilityElement(first, prev))
+                toReturn.add(new CredibilityElement<A>(first, prev)); // (first > prev) ; (prev-->first)
+        }else{
+            while (it.hasNext()) {
+                actual = it.next();
+                toReturn.add(new CredibilityElement<A>(actual, prev));
+                prev = actual;
+            }
+
+            toReturn.add(new CredibilityElement<A>(first, prev)); // (first > prev) ; (prev-->first)
+        }
+        // ---------------------------------------------------
+
     	return toReturn;
     }
     
     private void addIfNotUnderSetInclusion(List<CredibilityElement<A>> filteredCycle) {
     	boolean is_kernel;
     	int index;
-    	
+
     	if(filteredCycles.isEmpty()) {
 			filteredCycles.add(filteredCycle);
     	}else{

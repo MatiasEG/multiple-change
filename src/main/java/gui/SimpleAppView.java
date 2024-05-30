@@ -56,7 +56,9 @@ public class SimpleAppView {
 	public static final String aLabel = new String(Character.toChars(01661)); // alpha
 	public static final String bLabel = new String(Character.toChars(01662)); // beta
 	public static final String revisionLabel = new String(Character.toChars(120495)); // Revision operator
-	
+	public static final String mergeLabel = new String(Character.toChars(934)); // Revision operator
+	// TODO circulo con punto para merge
+
 	public static final String waitingInitializationLabel = new String("... Waiting for Credibility Orders ...");
 	public static final String waitingOperationLabel = new String("... Waiting for Operation Request ...");
 	
@@ -85,6 +87,7 @@ public class SimpleAppView {
 	private JMenu menuCredibilityOrder, menuOperators, menuHelp, menuOpen, menuRuningExample;
 	private JMenuItem menuItemSavedBase, menuItemDefaultBase, menuItemAddOrder, menuItemExport, menuItemExit, menuItemExample1, menuItemExample2, menuItemExample7;
 	private JMenuItem menuItemRevisionOperator;
+	private JMenuItem menuItemMergeOperator;
 	private JMenuItem menuItemUserManual, menuItemAboutVersion, menuItemPoweredBy;
 	
 	// Main Tabbed Panels
@@ -99,7 +102,7 @@ public class SimpleAppView {
 	private JComponent orderAPanel, orderASelectInputPanel, orderAGraphPanel;
 	private JComponent orderBPanel, orderBSelectInputPanel, orderBGraphPanel;
 	private JComponent unionPanel, kernelPanel;
-	private JComponent resultsByTSFPane, resultsByLSFPane, resultsByLCSFPane;
+	private JComponent resultsByTSFPane, resultsByLSFPane, resultsBy_LCSF_GLCSF_Pane;
 	
 	// Labels Information
 	private JLabel lblInformationLeft, lblInformationRight;
@@ -107,18 +110,18 @@ public class SimpleAppView {
 	private JComboBox<String> comboSelectOrderA, comboSelectOrderB, comboSelectOperationA, comboSelectOperationB;
 		
 	private JGraphXAdapter<Integer, DefaultEdge> adapterOrderA, adapterOrderB;
-	private JGraphXAdapter<Integer, DefaultEdge> adapterUnion, adapterRevisionTSF, adapterRevisionLSF, adapterRevisionLCSF;
+	private JGraphXAdapter<Integer, DefaultEdge> adapterUnion, adapterRevisionTSF, adapterRevisionLSF, adapterRevisionLCSF_GLCSF;
 	
 	private mxGraphComponent graphComponentOrderA, graphComponentOrderB;
-	private mxGraphComponent graphComponentRevision, graphComponentRevisionTSF, graphComponentRevisionLSF, graphComponentRevisionLCSF;
+	private mxGraphComponent graphComponentRevision, graphComponentRevisionTSF, graphComponentRevisionLSF, graphComponentRevisionLCSF_GLCSF;
 	
 	private mxHierarchicalLayout layoutOrderA, layoutOrderB;
-	private mxHierarchicalLayout layoutRevision, layoutRevisionTSF, layoutRevisionRSF, layoutRevisionLCSF;
-	
+	private mxHierarchicalLayout layoutRevision, layoutRevisionTSF, layoutRevisionRSF, layoutRevisionLCSF_GLCSF;
+
 	public SimpleAppView(AppController l) {
 		appController = l;
 		
-		frame = new JFrame("Graphical user interface of prioritized multiple change on credibility orders");
+		frame = new JFrame("Graphical user interface of multiple change on credibility orders");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setPreferredSize(new Dimension(1100, 700));
         frame.setResizable(false);
@@ -202,8 +205,10 @@ public class SimpleAppView {
         
         // Operators Menu Bar
         menuItemRevisionOperator = new JMenuItem("Revision ("+ aLabel + " " + revisionLabel + " " + bLabel + ")");
+		menuItemMergeOperator = new JMenuItem("Merge ("+ aLabel + " " + mergeLabel + " " + bLabel + ")");
         
         menuOperators.add(menuItemRevisionOperator);
+		menuOperators.add(menuItemMergeOperator);
         
         // Help Menu Bar
         menuItemUserManual = new JMenuItem("User Manual");
@@ -327,12 +332,12 @@ public class SimpleAppView {
         // Revision Results Tab Panel
         resultsByTSFPane = makeEmptyPanel(waitingOperationLabel);
         resultsByLSFPane = makeEmptyPanel(waitingOperationLabel);
-        resultsByLCSFPane = makeEmptyPanel(waitingOperationLabel);
+        resultsBy_LCSF_GLCSF_Pane = makeEmptyPanel(waitingOperationLabel);
         
-        bottomRightMainTabbedPane.addTab("Revision by TSF", null, resultsByTSFPane, "Operation applying Total Selection Function");
-        bottomRightMainTabbedPane.addTab("Revision by LSF", null, resultsByLSFPane, "Operation applying Lexicographic Selection Function");
-        bottomRightMainTabbedPane.addTab("Revision by LCSF", null, resultsByLCSFPane, "Operation applying Least Credible Selection Function");
-       
+        bottomRightMainTabbedPane.addTab("... TSF", null, resultsByTSFPane, "Operation applying Total Selection Function");
+        bottomRightMainTabbedPane.addTab("... LSF", null, resultsByLSFPane, "Operation applying Lexicographic Selection Function");
+		bottomRightMainTabbedPane.addTab("...", null, resultsBy_LCSF_GLCSF_Pane, "Operation applying a Selection Function to be determinate");
+
         rightMainPanel.add(topRightMainTabbedPane);
         rightMainPanel.add(bottomRightMainTabbedPane);
         
@@ -405,7 +410,23 @@ public class SimpleAppView {
 					contextA = Integer.parseInt(comboSelectOrderA.getItemAt(comboSelectOrderA.getSelectedIndex()));
 					contextB = Integer.parseInt(comboSelectOrderB.getItemAt(comboSelectOrderB.getSelectedIndex()));
 					if (contextA != contextB) {
-						appController.revision(contextA, contextB);
+						appController.applySelectionFunctions(contextA, contextB, true);
+					}else {
+						JOptionPane.showMessageDialog(null, "The selected " + aLabel + " and " + bLabel + " credibility orders must be different. ", "Failed Request", JOptionPane.ERROR_MESSAGE);
+					}
+				}
+			}
+		});
+
+		menuItemMergeOperator.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int contextA, contextB;
+				if (comboSelectOrderA.getItemCount() > 0) {
+					contextA = Integer.parseInt(comboSelectOrderA.getItemAt(comboSelectOrderA.getSelectedIndex()));
+					contextB = Integer.parseInt(comboSelectOrderB.getItemAt(comboSelectOrderB.getSelectedIndex()));
+					if (contextA != contextB) {
+						appController.applySelectionFunctions(contextA, contextB, false);
 					}else {
 						JOptionPane.showMessageDialog(null, "The selected " + aLabel + " and " + bLabel + " credibility orders must be different. ", "Failed Request", JOptionPane.ERROR_MESSAGE);
 					}
@@ -581,9 +602,9 @@ public class SimpleAppView {
 				break;
 			}
 			
-			case AppController.CREDIBILITY_ORDER_REVISION_LCSF:{
-				adapter = adapterRevisionLCSF;
-				graphComponent = graphComponentRevisionLCSF;
+			case AppController.CREDIBILITY_ORDER_REVISION_LCSF_GLCSF:{
+				adapter = adapterRevisionLCSF_GLCSF;
+				graphComponent = graphComponentRevisionLCSF_GLCSF;
 				edgeColor = colorOrderB;
 				break;
 			}
@@ -626,6 +647,7 @@ public class SimpleAppView {
 		switch (element){
 			case AppController.REVISION_OPERATOR:{
 				menuItemRevisionOperator.setEnabled(enabled);
+				menuItemMergeOperator.setEnabled(enabled);
 				break;
 			}
 			
@@ -642,18 +664,18 @@ public class SimpleAppView {
 		kernelPanel.removeAll();
 		resultsByTSFPane.removeAll();
 		resultsByLSFPane.removeAll();
-        resultsByLCSFPane.removeAll();
+        resultsBy_LCSF_GLCSF_Pane.removeAll();
         		
 		unionPanel.add(makeEmptyPanel(waitingOperationLabel));
 		kernelPanel.add(makeEmptyPanel(waitingOperationLabel));
         resultsByTSFPane.add(makeEmptyPanel(waitingOperationLabel));        
         resultsByLSFPane.add(makeEmptyPanel(waitingOperationLabel));
-        resultsByLCSFPane.add(makeEmptyPanel(waitingOperationLabel));
+        resultsBy_LCSF_GLCSF_Pane.add(makeEmptyPanel(waitingOperationLabel));
         
         bottomRightMainTabbedPane.updateUI();
 	}
 	
-	public void drawGrapInVisualizer(int element, Graph<Integer, DefaultEdge> g) {
+	public void drawGraphInVisualizer(int element, Graph<Integer, DefaultEdge> g) {
 		ListenableGraph<Integer, DefaultEdge> graph = new DefaultListenableGraph<>(g);
 		
 		switch(element) {
@@ -693,107 +715,123 @@ public class SimpleAppView {
 	
 	@SuppressWarnings("unchecked")
 	public void drawSimpleRevision(
-			Graph<Integer, DefaultEdge> gA, 
-			Graph<Integer, DefaultEdge> gB, 
+			Graph<Integer, DefaultEdge> gA,
+			Graph<Integer, DefaultEdge> gB,
 			List<List<CredibilityElement<Integer>>> kernels,
 			List<CredibilityElement<Integer>> TSF,
 			List<CredibilityElement<Integer>> LSF,
-			List<CredibilityElement<Integer>> LCSF
+			List<CredibilityElement<Integer>> LCSF_GLCSF
 			) {
-		
-		SimpleDirectedGraph<Integer, DefaultEdge> union, union_tsf, union_lsf, union_lcsf;
-		ListenableGraph<Integer, DefaultEdge> graph, graph_tsf, graph_lsf, graph_lcsf;
-		HashMap<DefaultEdge, mxICell> map_edge_to_cell_merge, map_edge_to_cell_tsf, map_edge_to_cell_lsf, map_edge_to_cell_lcsf;
+
+		// Modified code merge ---------------------------------
+		if(appController.isRevision()){
+			bottomRightMainTabbedPane.setTitleAt(0, "Revision by TSF");
+			bottomRightMainTabbedPane.setTitleAt(1, "Revision by LSF");
+
+			bottomRightMainTabbedPane.setTitleAt(2, "Revision by LCSF");
+			bottomRightMainTabbedPane.setToolTipTextAt(2, "Operation applying Least Credible Selection Function");
+		}else{
+			bottomRightMainTabbedPane.setTitleAt(0, "Merge by TSF");
+			bottomRightMainTabbedPane.setTitleAt(1, "Merge by LSF");
+
+			bottomRightMainTabbedPane.setTitleAt(2, "Merge by GLCSF");
+			bottomRightMainTabbedPane.setToolTipTextAt(2, "Operation applying Generalized Least Credible Selection Function");
+		}
+		// ---------------------------------------------------
+
+		SimpleDirectedGraph<Integer, DefaultEdge> union, union_tsf, union_lsf, union_lcsf_glcsf;
+		ListenableGraph<Integer, DefaultEdge> graph, graph_tsf, graph_lsf, graph_lcsf_glcsf;
+		HashMap<DefaultEdge, mxICell> map_edge_to_cell_merge, map_edge_to_cell_tsf, map_edge_to_cell_lsf, map_edge_to_cell_lcsf_glcsf;
 		Set<DefaultEdge> edgesGA;
 		Iterator<DefaultEdge> iteratorEdgesGA;
 		DefaultEdge actualEdge;
-		ArrayList<mxICell> cellListMerge, cellListTSF, cellListLSF, cellListLCSF;
+		ArrayList<mxICell> cellListMerge, cellListTSF, cellListLSF, cellListLCSF_GLCSF;
 		mxICell actualCellMerge;
 		JTextArea kernelsTextArea;
 		String text;
 		int index;
-		
+
 		// Compute merged order: order_2 + order_1
-		// The order of the union is very important: all edges of gB prevail over the repeated edges of gA 
+		// The order of the union is very important: all edges of gB prevail over the repeated edges of gA
 		union = new SimpleDirectedGraph<Integer, DefaultEdge>(DefaultEdge.class);
         Graphs.addGraph(union, gB);
         Graphs.addGraph(union, gA);
-        
+
         // Clone merged order
         union_tsf = (SimpleDirectedGraph<Integer, DefaultEdge>) union.clone();
         union_lsf = (SimpleDirectedGraph<Integer, DefaultEdge>) union.clone();
-        union_lcsf = (SimpleDirectedGraph<Integer, DefaultEdge>) union.clone();
-        
-        // Remove the selected credibility elements of each selection function	
+        union_lcsf_glcsf = (SimpleDirectedGraph<Integer, DefaultEdge>) union.clone();
+
+        // Remove the selected credibility elements of each selection function
         for(CredibilityElement<Integer> ce : TSF) {
         	union_tsf.removeEdge(ce.getLessCredible(), ce.getMostCredible());
         	if (union_tsf.edgesOf(ce.getLessCredible()).isEmpty())
         		union_tsf.removeVertex(ce.getLessCredible());
-        	
+
         	if (union_tsf.edgesOf(ce.getMostCredible()).isEmpty())
         		union_tsf.removeVertex(ce.getMostCredible());
         }
-        
+
         for(CredibilityElement<Integer> ce : LSF) {
  			union_lsf.removeEdge(ce.getLessCredible(), ce.getMostCredible());
- 			
+
  			if (union_lsf.edgesOf(ce.getLessCredible()).isEmpty())
  				union_lsf.removeVertex(ce.getLessCredible());
-        	
+
         	if (union_lsf.edgesOf(ce.getMostCredible()).isEmpty())
         		union_lsf.removeVertex(ce.getMostCredible());
- 			
+
  		}
-        
-        for(CredibilityElement<Integer> ce : LCSF) {
- 			union_lcsf.removeEdge(ce.getLessCredible(), ce.getMostCredible());
- 			
- 			if (union_lcsf.edgesOf(ce.getLessCredible()).isEmpty())
- 				union_lcsf.removeVertex(ce.getLessCredible());
-        	
-        	if (union_lcsf.edgesOf(ce.getMostCredible()).isEmpty())
-        		union_lcsf.removeVertex(ce.getMostCredible());
+
+        for(CredibilityElement<Integer> ce : LCSF_GLCSF) {
+ 			union_lcsf_glcsf.removeEdge(ce.getLessCredible(), ce.getMostCredible());
+
+ 			if (union_lcsf_glcsf.edgesOf(ce.getLessCredible()).isEmpty())
+ 				union_lcsf_glcsf.removeVertex(ce.getLessCredible());
+
+        	if (union_lcsf_glcsf.edgesOf(ce.getMostCredible()).isEmpty())
+        		union_lcsf_glcsf.removeVertex(ce.getMostCredible());
  		}
-        
+
 		graph = new DefaultListenableGraph<Integer, DefaultEdge>(union);
 		graph_tsf = new DefaultListenableGraph<Integer, DefaultEdge>(union_tsf);
-		graph_lsf = new DefaultListenableGraph<Integer, DefaultEdge>(union_lsf); 
-		graph_lcsf = new DefaultListenableGraph<Integer, DefaultEdge>(union_lcsf); 
-				
+		graph_lsf = new DefaultListenableGraph<Integer, DefaultEdge>(union_lsf);
+		graph_lcsf_glcsf = new DefaultListenableGraph<Integer, DefaultEdge>(union_lcsf_glcsf);
+
 		// Color all edges with GB edges color
 		adapterUnion = new JGraphXAdapter<Integer, DefaultEdge>(graph);
 		adapterRevisionTSF = new JGraphXAdapter<Integer, DefaultEdge>(graph_tsf);
 		adapterRevisionLSF = new JGraphXAdapter<Integer, DefaultEdge>(graph_lsf);
-		adapterRevisionLCSF = new JGraphXAdapter<Integer, DefaultEdge>(graph_lcsf);
-		
+		adapterRevisionLCSF_GLCSF = new JGraphXAdapter<Integer, DefaultEdge>(graph_lcsf_glcsf);
+
 		graphComponentRevision = new mxGraphComponent(adapterUnion);
 		graphComponentRevisionTSF = new mxGraphComponent(adapterRevisionTSF);
 		graphComponentRevisionLSF = new mxGraphComponent(adapterRevisionLSF);
-		graphComponentRevisionLCSF = new mxGraphComponent(adapterRevisionLCSF);
-		
+		graphComponentRevisionLCSF_GLCSF = new mxGraphComponent(adapterRevisionLCSF_GLCSF);
+
 		disableEditToolGraph(adapterUnion, graphComponentRevision);
 		disableEditToolGraph(adapterRevisionTSF, graphComponentRevisionTSF);
 		disableEditToolGraph(adapterRevisionLSF, graphComponentRevisionLSF);
-		disableEditToolGraph(adapterRevisionLCSF, graphComponentRevisionLCSF);
-		
+		disableEditToolGraph(adapterRevisionLCSF_GLCSF, graphComponentRevisionLCSF_GLCSF);
+
 		stylizeGraphComponent(AppController.CREDIBILITY_ORDER_REVISION);
 		stylizeGraphComponent(AppController.CREDIBILITY_ORDER_REVISION_TSF);
 		stylizeGraphComponent(AppController.CREDIBILITY_ORDER_REVISION_LSF);
-		stylizeGraphComponent(AppController.CREDIBILITY_ORDER_REVISION_LCSF);
-		
+		stylizeGraphComponent(AppController.CREDIBILITY_ORDER_REVISION_LCSF_GLCSF);
+
 		// Gets GA edge set and edge cell map, to color GA edges with GA edge color.
 		map_edge_to_cell_merge = adapterUnion.getEdgeToCellMap();
 		map_edge_to_cell_tsf = adapterRevisionTSF.getEdgeToCellMap();
 		map_edge_to_cell_lsf = adapterRevisionLSF.getEdgeToCellMap();
-		map_edge_to_cell_lcsf = adapterRevisionLCSF.getEdgeToCellMap();
-		
+		map_edge_to_cell_lcsf_glcsf = adapterRevisionLCSF_GLCSF.getEdgeToCellMap();
+
 		edgesGA = gA.edgeSet();
 		iteratorEdgesGA = edgesGA.iterator();
 		cellListMerge = new ArrayList<mxICell>();
 		cellListTSF = new ArrayList<mxICell>();
 		cellListLSF = new ArrayList<mxICell>();
-		cellListLCSF = new ArrayList<mxICell>();
-		
+		cellListLCSF_GLCSF = new ArrayList<mxICell>();
+
 		// cellListX contains all edges of GA that do not belong to GB.
 		while(iteratorEdgesGA.hasNext()) {
 			actualEdge = iteratorEdgesGA.next();
@@ -802,98 +840,104 @@ public class SimpleAppView {
 				actualEdge = iteratorEdgesGA.next();
 				actualCellMerge = map_edge_to_cell_merge.get(actualEdge);
 			}
-			
+
 			if (actualCellMerge != null)
 				cellListMerge.add(actualCellMerge);
-			
+
 			if ((actualCellMerge = map_edge_to_cell_tsf.get(actualEdge)) != null )
 				cellListTSF.add(actualCellMerge);
-			
+
 			if ((actualCellMerge = map_edge_to_cell_lsf.get(actualEdge)) != null )
 				cellListLSF.add(actualCellMerge);
-			
-			if ((actualCellMerge = map_edge_to_cell_lcsf.get(actualEdge)) != null )
-				cellListLCSF.add(actualCellMerge);
-			
+
+			if ((actualCellMerge = map_edge_to_cell_lcsf_glcsf.get(actualEdge)) != null )
+				cellListLCSF_GLCSF.add(actualCellMerge);
+
 		}
-		
+
 		// Put the GB edge style to the cell that only belong to GB.
 		adapterUnion.setCellStyle("defaultEdge;fontSize=0;strokeColor="+colorOrderA, cellListMerge.toArray());
 		adapterRevisionTSF.setCellStyle("defaultEdge;fontSize=0;strokeColor="+colorOrderA, cellListTSF.toArray());
 		adapterRevisionLSF.setCellStyle("defaultEdge;fontSize=0;strokeColor="+colorOrderA, cellListLSF.toArray());
-		adapterRevisionLCSF.setCellStyle("defaultEdge;fontSize=0;strokeColor="+colorOrderA, cellListLCSF.toArray());
-		
+		adapterRevisionLCSF_GLCSF.setCellStyle("defaultEdge;fontSize=0;strokeColor="+colorOrderA, cellListLCSF_GLCSF.toArray());
+
 		// cellList contains all edges of gA that belong to a kernel.
 		// print the kernels set in the kernelSetPane
 		// remove from graph_tsf all the credibility elements of kernels
-		
+
 		kernelsTextArea = new JTextArea();
-		new JScrollPane(kernelsTextArea); 
-				
+		new JScrollPane(kernelsTextArea);
+
 		kernelsTextArea.setBorder(BorderFactory.createEmptyBorder(15,15,15,15));
 		kernelsTextArea.setOpaque(false);
 		kernelsTextArea.setEditable(false);
-		
+
 		index = 0;
 		text = new String("Kernels Set (K = { Ki | Ki is a Kernel}) \n \n");
 		cellListMerge = new ArrayList<mxICell>();
-		
+
 		for(List<CredibilityElement<Integer>> kernel : kernels) {
 			// Texto for Ki kernel
 			text += "K"+ index++ +" = { ";
-			
+
 			for (CredibilityElement<Integer> ce : kernel) {
-				
+
 				graph_tsf.removeEdge(ce.getLessCredible(), ce.getMostCredible());
-				
+
 				actualCellMerge = map_edge_to_cell_merge.get( gA.getEdge(ce.getLessCredible(), ce.getMostCredible()));
+
+				// Modified code merge ---------------------------------
+				if(!appController.isRevision() && actualCellMerge == null)
+					actualCellMerge = map_edge_to_cell_merge.get( gB.getEdge(ce.getLessCredible(), ce.getMostCredible()));
+				// ---------------------------------------------------
+
 				cellListMerge.add(actualCellMerge);
-				
+
 				text += " " + ce.toString() + ",";
 			}
 			text += " } \n";
 		}
-		
+
 		if (kernels.isEmpty()) {
 			text += "The kernel set is empty.";
 		}
-		
+
 		kernelsTextArea.setText(text);
 		kernelPanel.removeAll();
 		kernelPanel.add(kernelsTextArea);
-		
+
 		// Put the kernel edge style to the cell that belong to gB and kernel.
 		adapterUnion.setCellStyle("defaultEdge;fontSize=0;strokeWidth=1.5;strokeColor="+colorKernel+";dashed=true", cellListMerge.toArray());
-		
+
 		// Draw the resulting graphs on the corresponding unionPanel
 		unionPanel.removeAll();
 		unionPanel.add(graphComponentRevision);
         layoutRevision = new mxHierarchicalLayout(adapterUnion, SwingConstants.WEST);
         layoutRevision.setInterHierarchySpacing(15);
         layoutRevision.execute(adapterUnion.getDefaultParent());
-        
+
         resultsByTSFPane.removeAll();
         resultsByTSFPane.add(graphComponentRevisionTSF);
         layoutRevisionTSF = new mxHierarchicalLayout(adapterRevisionTSF, SwingConstants.WEST);
         layoutRevisionTSF.setInterHierarchySpacing(15);
         layoutRevisionTSF.execute(adapterRevisionTSF.getDefaultParent());
-        
+
         resultsByLSFPane.removeAll();
         resultsByLSFPane.add(graphComponentRevisionLSF);
         layoutRevisionRSF = new mxHierarchicalLayout(adapterRevisionLSF, SwingConstants.WEST);
         layoutRevisionRSF.setInterHierarchySpacing(15);
         layoutRevisionRSF.execute(adapterRevisionLSF.getDefaultParent());
-        
-        resultsByLCSFPane.removeAll();
-        resultsByLCSFPane.add(graphComponentRevisionLCSF);
-        layoutRevisionLCSF = new mxHierarchicalLayout(adapterRevisionLCSF, SwingConstants.WEST);
-        layoutRevisionLCSF.setInterHierarchySpacing(15);
-        layoutRevisionLCSF.execute(adapterRevisionLCSF.getDefaultParent());
-        
+
+        resultsBy_LCSF_GLCSF_Pane.removeAll();
+        resultsBy_LCSF_GLCSF_Pane.add(graphComponentRevisionLCSF_GLCSF);
+        layoutRevisionLCSF_GLCSF = new mxHierarchicalLayout(adapterRevisionLCSF_GLCSF, SwingConstants.WEST);
+        layoutRevisionLCSF_GLCSF.setInterHierarchySpacing(15);
+        layoutRevisionLCSF_GLCSF.execute(adapterRevisionLCSF_GLCSF.getDefaultParent());
+
         bottomRightMainTabbedPane.updateUI();
-        
+
 	}
-	
+
 	public void setContextsList(String [] listItems) {
 		comboSelectOrderA.removeAllItems();
 		comboSelectOrderB.removeAllItems();
@@ -904,4 +948,5 @@ public class SimpleAppView {
 		if (comboSelectOrderB.getItemCount() > 0)
 			comboSelectOrderB.setSelectedIndex( (comboSelectOrderB.getItemCount() > 1) ? 1 : 0);
 	}
+
 }

@@ -56,5 +56,22 @@ public class CredibilityOrder<A,C> {
 		AsUnmodifiableGraph<A, DefaultEdge> toReturn = new AsUnmodifiableGraph<A, DefaultEdge>(co);
 		return toReturn;
 	}
-	
+
+	// Modified code merge ---------------------------------
+	public boolean containsCredibilityElement(CredibilityElement<A> elem) {
+		A agentA, agentB;
+		CredibilityElement<A> ce;
+
+		for (DefaultEdge e :  co.edgeSet()) {
+			agentB = co.getEdgeSource(e);
+			agentA = co.getEdgeTarget(e);
+			ce = new CredibilityElement<A>(agentA, agentB);
+			if(ce.equals(elem)){
+				return true;
+			}
+		}
+
+		return false;
+	}
+	// ---------------------------------------------------
 }

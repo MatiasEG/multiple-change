@@ -12,6 +12,7 @@ import incisionFunctions.DefaultComparator;
 import incisionFunctions.LCSF;
 import incisionFunctions.LSF;
 import incisionFunctions.TSF;
+import incisionFunctions.GLCSF;
 import sets.CredibilityBase;
 import sets.CredibilityElement;
 import sets.CredibilityOrder;
@@ -27,7 +28,7 @@ public class AppController {
 	public static final int CREDIBILITY_ORDER_REVISION = 3;
 	public static final int CREDIBILITY_ORDER_REVISION_TSF = 4;
 	public static final int CREDIBILITY_ORDER_REVISION_LSF = 5;
-	public static final int CREDIBILITY_ORDER_REVISION_LCSF = 6;
+	public static final int CREDIBILITY_ORDER_REVISION_LCSF_GLCSF = 6;
 		
 	public static final int RUNNING_EXAMPLE_1 = 100;
 	public static final int RUNNING_EXAMPLE_2 = 101;
@@ -38,6 +39,8 @@ public class AppController {
 	
 	private SimpleAppView view;
 	private CredibilityBase<Integer, Integer> cb;
+
+	private boolean isRevision;
 	
 	public AppController() {
 		view = null;
@@ -64,8 +67,8 @@ public class AppController {
 		view.resetRevisionPanels();
 		view.setContextsList(getContextList());
 		
-		view.drawGrapInVisualizer(CREDIBILITY_ORDER_A, new DirectedAcyclicGraph<Integer, DefaultEdge>(DefaultEdge.class));
-		view.drawGrapInVisualizer(CREDIBILITY_ORDER_B, new DirectedAcyclicGraph<Integer, DefaultEdge>(DefaultEdge.class));
+		view.drawGraphInVisualizer(CREDIBILITY_ORDER_A, new DirectedAcyclicGraph<Integer, DefaultEdge>(DefaultEdge.class));
+		view.drawGraphInVisualizer(CREDIBILITY_ORDER_B, new DirectedAcyclicGraph<Integer, DefaultEdge>(DefaultEdge.class));
 		
 		view.setEnabledMenuOption(CREDIBILITY_ORDER_OPERATIONS, true);
 		view.setEnabledMenuOption(REVISION_OPERATOR, true);
@@ -131,7 +134,7 @@ public class AppController {
 			cb.addCredibilityObject(agentA, agentB, context);
 			view.resetRevisionPanels();
 			view.setLeftInformation("The credibility element "+agentA+">"+agentB+" in context "+context+" was added.", SimpleAppView.TEXT_SUCCESS);
-			view.drawGrapInVisualizer(credibility_order_tab, cb.getCredibilityOrder(context).getGraphRepresentation());
+			view.drawGraphInVisualizer(credibility_order_tab, cb.getCredibilityOrder(context).getGraphRepresentation());
 		}catch(IllegalArgumentException e) {
 			view.setLeftInformation("The credibility element "+agentA+">"+agentB+" in context "+context+" was not added.", SimpleAppView.TEXT_ERROR);
 		}
@@ -142,44 +145,63 @@ public class AppController {
 			cb.removeCredibilityObject(agentA, agentB, context);
 			view.resetRevisionPanels();
 			view.setLeftInformation("The credibility element "+agentA+">"+agentB+" in context "+context+" was removed.", SimpleAppView.TEXT_SUCCESS);
-			view.drawGrapInVisualizer(credibility_order_tab, cb.getCredibilityOrder(context).getGraphRepresentation());
+			view.drawGraphInVisualizer(credibility_order_tab, cb.getCredibilityOrder(context).getGraphRepresentation());
 		}catch(IllegalArgumentException e) {
 			view.setLeftInformation("The credibility element "+agentA+">"+agentB+" in context "+context+" was not removed.", SimpleAppView.TEXT_ERROR);
 		}
 	}
 	
 	public void changeActiveContextInOrderVisualizer(int credibility_order_tab, int context) {
-		view.drawGrapInVisualizer(credibility_order_tab, cb.getCredibilityOrder(context).getGraphRepresentation());
+		view.drawGraphInVisualizer(credibility_order_tab, cb.getCredibilityOrder(context).getGraphRepresentation());
 	}
-	
-	public void revision(int context1, int context2) {
+
+	// Modified code merge ---------------------------------
+	public void applySelectionFunctions(int context1, int context2, boolean isRevision) {
+		this.isRevision = isRevision;
+
 		CredibilityOrder<Integer, Integer> co1, co2;
 		Kernels<Integer, Integer> kernelsClass;
 		TSF<Integer, Integer> selectedTSF;
 		LSF<Integer, Integer> selectedLSF;
 		LCSF<Integer, Integer> selectedLCSF;
+		GLCSF<Integer, Integer> selectedGLCSF;
 		List<List<CredibilityElement<Integer>>> kernels;
-		List<CredibilityElement<Integer>> tsf, rsf, lcsf;
+		List<CredibilityElement<Integer>> tsf, rsf, lcsf_glcsf;
 		
 		co1 = cb.getCredibilityOrder(context1);
 		co2 = cb.getCredibilityOrder(context2);
 		
 		kernelsClass = new Kernels<Integer, Integer>(co1,co2);
-		kernels = kernelsClass.computeKernels();
+		kernels = kernelsClass.computeKernels(isRevision);
 		
 		selectedTSF = new TSF<Integer, Integer>();
 		tsf = selectedTSF.select(kernels);
 		
 		selectedLSF = new LSF<Integer, Integer>(new DefaultComparator<Integer>());
 		rsf = selectedLSF.select(kernels);
-		
-		selectedLCSF = new LCSF<Integer, Integer>(new DefaultComparator<Integer>());
-		lcsf = selectedLCSF.select(kernels);
-		
-		view.drawSimpleRevision(co1.getGraphRepresentation(), co2.getGraphRepresentation(), kernels, tsf, rsf, lcsf);
-		view.setLeftInformation("Results of the revision of Cred. Order " + SimpleAppView.aLabel + " by Cred. Order " + SimpleAppView.bLabel + ".", SimpleAppView.TEXT_SUCCESS);
+
+		if(isRevision){
+			selectedLCSF = new LCSF<Integer, Integer>(new DefaultComparator<Integer>());
+			lcsf_glcsf = selectedLCSF.select(kernels);
+		}else{
+			selectedGLCSF = new GLCSF<Integer, Integer>(new DefaultComparator<Integer>());
+			selectedGLCSF.setFilters(co1, co2);
+			lcsf_glcsf = selectedGLCSF.select(kernels);
+		}
+
+		view.drawSimpleRevision(co1.getGraphRepresentation(), co2.getGraphRepresentation(), kernels, tsf, rsf, lcsf_glcsf);
+		String operationString;
+
+		// Modified code merge ---------------------------------
+		if(isRevision)
+			operationString = "revision";
+		else
+			operationString = "merge";
+		view.setLeftInformation("Results of the "+operationString+" of Cred. Order " + SimpleAppView.aLabel + " by Cred. Order " + SimpleAppView.bLabel + ".", SimpleAppView.TEXT_SUCCESS);
+		// ---------------------------------------------------
 	}
-	
+	// ---------------------------------------------------
+
 	//----------------------------------------------------
 	
 	private String [] getContextList() {
@@ -195,5 +217,9 @@ public class AppController {
 		}
 		
 		return toReturn;
+	}
+
+	public boolean isRevision(){
+		return isRevision;
 	}
 }

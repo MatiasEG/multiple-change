@@ -22,15 +22,18 @@ public class Kernels<A,C> {
         order_2 = o2;
         
         // Union of order_2 and order_1 without multiple-edges 
-        // The the order of union is very important: all edges of order_2 prevail over the repeated edges of order_1 
+        // The order of union is very important: all edges of order_2 prevail over the repeated edges of order_1
         union = new SimpleDirectedGraph<A, DefaultEdge>(DefaultEdge.class);
         Graphs.addGraph(union, order_2.getGraphRepresentation());
         Graphs.addGraph(union, order_1.getGraphRepresentation());
         
     }
 
-    public List<List<CredibilityElement<A>>> computeKernels() {
+    public List<List<CredibilityElement<A>>> computeKernels(boolean revision) {
     	JohnsonBasedKernelDetector<A,C,DefaultEdge> kernelDetector = new JohnsonBasedKernelDetector<A,C,DefaultEdge>(union, order_2);
-		return kernelDetector.findKernels();
+        // Modified code merge ---------------------------------
+        kernelDetector.setOperationType(revision);
+        // ---------------------------------------------------
+        return kernelDetector.findKernels();
     }
 }

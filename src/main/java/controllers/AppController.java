@@ -39,6 +39,7 @@ public class AppController {
 	
 	private SimpleAppView view;
 	private CredibilityBase<Integer, Integer> cb;
+	private CredibilityBase<Integer, Integer> cbaux;
 
 	private boolean isRevision;
 	
@@ -103,6 +104,21 @@ public class AppController {
 		view.setContextsList(getContextList());
 		view.setEnabledMenuOption(CREDIBILITY_ORDER_OPERATIONS, true);
 		view.setEnabledMenuOption(REVISION_OPERATOR, true);	
+	}
+
+	public void readFromFileNewCredibilityBase(String pathA, String pathB) {
+		cb = FileReaderCredibilityOrder.processCredibilityBaseFromFile(pathA, pathB);
+
+		if(cb != null){
+			view.resetRevisionPanels();
+			view.setContextsList(getContextList());
+			view.setEnabledMenuOption(CREDIBILITY_ORDER_OPERATIONS, true);
+			view.setEnabledMenuOption(REVISION_OPERATOR, true);
+			view.setLeftInformation("Credibility orders successfully loaded.", SimpleAppView.TEXT_SUCCESS);
+		}else{
+			view.setLeftInformation("An error occurs while loading credibility orders.", SimpleAppView.TEXT_ERROR);
+		}
+
 	}
 	
 	//----------------------------------------------------

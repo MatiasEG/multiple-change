@@ -31,6 +31,7 @@ import javax.swing.SwingConstants;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 
+import controllers.FileSelector;
 import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
 import org.jgrapht.ListenableGraph;
@@ -84,8 +85,8 @@ public class SimpleAppView {
 	
 	// Menu Elements
 	private JMenuBar menuBar;
-	private JMenu menuCredibilityOrder, menuOperators, menuHelp, menuOpen, menuRuningExample;
-	private JMenuItem menuItemSavedBase, menuItemDefaultBase, menuItemAddOrder, menuItemExport, menuItemExit, menuItemExample1, menuItemExample2, menuItemExample7;
+	private JMenu menuCredibilityOrder, menuOperators, menuHelp, menuOpen, menuRuningExample, menuSavedBase;
+	private JMenuItem menuItemDefaultBase, menuItemAddOrder, menuItemExport, menuItemExit, menuItemExample1, menuItemExample2, menuItemExample7, menuItemLoadOrder;
 	private JMenuItem menuItemRevisionOperator;
 	private JMenuItem menuItemMergeOperator;
 	private JMenuItem menuItemUserManual, menuItemAboutVersion, menuItemPoweredBy;
@@ -184,16 +185,18 @@ public class SimpleAppView {
         menuItemExit = new JMenuItem("Exit");
         
         menuRuningExample = new JMenu("Running examples");
-        menuItemSavedBase = new JMenuItem("Saved orders...");
-        menuItemExample1 = new JMenuItem("Example 1");
+        menuSavedBase = new JMenu("Saved orders...");
+		menuItemExample1 = new JMenuItem("Example 1");
         menuItemExample2 = new JMenuItem("Example 2");
         menuItemExample7 = new JMenuItem("Example 7");
-        
+		menuItemLoadOrder = new JMenuItem("Load "+aLabel+" & "+bLabel);
+
         menuOpen.add(menuRuningExample);
-        menuOpen.add(menuItemSavedBase);
+        menuOpen.add(menuSavedBase);
         menuRuningExample.add(menuItemExample1);
         menuRuningExample.add(menuItemExample2);
         menuRuningExample.add(menuItemExample7);
+		menuSavedBase.add(menuItemLoadOrder);
                 
         menuCredibilityOrder.add(menuOpen);
         menuCredibilityOrder.add(new JSeparator());
@@ -222,7 +225,7 @@ public class SimpleAppView {
         
         // Disabled options in this version
         menuItemExport.setEnabled(false);
-        menuItemSavedBase.setEnabled(false);
+        //menuSavedBase.setEnabled(false);
         menuItemUserManual.setEnabled(false);
         menuItemAboutVersion.setEnabled(false);
 	}
@@ -392,6 +395,18 @@ public class SimpleAppView {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				appController.newCredibilityBase(AppController.RUNNING_EXAMPLE_7);
+			}
+		});
+
+		menuItemLoadOrder.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String pathA = FileSelector.showFileChooser();
+				String pathB = FileSelector.showFileChooser();
+				if(pathA != null && pathB != null)
+					appController.readFromFileNewCredibilityBase(pathA, pathB);
+				else
+					JOptionPane.showMessageDialog(null, "Must select two files, one represents " + aLabel + " and the other " + bLabel + " credibility orders. ", "Failed Request", JOptionPane.ERROR_MESSAGE);
 			}
 		});
 		

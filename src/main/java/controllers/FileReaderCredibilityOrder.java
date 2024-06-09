@@ -1,10 +1,10 @@
 package controllers;
 
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.SimpleDirectedGraph;
 import sets.CredibilityBase;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 
 public class FileReaderCredibilityOrder {
 
@@ -22,11 +22,11 @@ public class FileReaderCredibilityOrder {
 
     private static boolean readFile(String csvFile, CredibilityBase<Integer, Integer> cb){
         try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
-            if(br.readLine().equals("credibility_order")) {
+            if(br.readLine().equals("credibility_order;context")) {
                 String line;
                 while ((line = br.readLine()) != null) {
                     String[] parts = line.split(";");
-                    int context = 0;
+                    int context;
                     if(parts.length == 2){
                         try{
                             context = Integer.parseInt(parts[1]);
@@ -40,8 +40,8 @@ public class FileReaderCredibilityOrder {
 
                     String[] prior = parts[0].split(">");
                     if (prior.length == 2) {
-                        int morePriorAgent = 0;
-                        int lessPriorAgent = 0;
+                        int morePriorAgent;
+                        int lessPriorAgent;
                         try{
                             morePriorAgent = Integer.parseInt(prior[0].trim().toLowerCase());
                             lessPriorAgent = Integer.parseInt(prior[1].trim().toLowerCase());
@@ -61,9 +61,33 @@ public class FileReaderCredibilityOrder {
                 return false;
             }
         }catch (IOException e) {
-            e.printStackTrace();
+            return false;
         }
 
         return true;
+    }
+
+    public static void writeCredibilityBaseFromData(String folderPath, String name, SimpleDirectedGraph<Integer, DefaultEdge> graph){
+        String fileName = name+".csv";
+        String filePath = folderPath+"\\"+fileName;
+
+        createFile(filePath, graph);
+    }
+
+    private static void createFile(String filePath, SimpleDirectedGraph<Integer, DefaultEdge> graph){
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+
+            writer.write("credibility_order;context");
+            writer.newLine();
+
+            // write data
+            for(DefaultEdge edge: graph.edgeSet()){
+                writer.write(graph.getEdgeTarget(edge)+">"+graph.getEdgeSource(edge)+";1");
+                writer.newLine();
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

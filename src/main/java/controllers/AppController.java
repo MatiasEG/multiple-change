@@ -13,6 +13,7 @@ import incisionFunctions.LCSF;
 import incisionFunctions.LSF;
 import incisionFunctions.TSF;
 import incisionFunctions.GLCSF;
+import org.jgrapht.graph.SimpleDirectedGraph;
 import sets.CredibilityBase;
 import sets.CredibilityElement;
 import sets.CredibilityOrder;
@@ -39,7 +40,6 @@ public class AppController {
 	
 	private SimpleAppView view;
 	private CredibilityBase<Integer, Integer> cb;
-	private CredibilityBase<Integer, Integer> cbaux;
 
 	private boolean isRevision;
 	
@@ -120,6 +120,10 @@ public class AppController {
 		}
 
 	}
+
+	public void saveCredibilityBaseDataIntoFiles(String folderPath, String name, SimpleDirectedGraph<Integer, DefaultEdge> graph) {
+		FileReaderCredibilityOrder.writeCredibilityBaseFromData(folderPath, name, graph);
+	}
 	
 	//----------------------------------------------------
 	
@@ -182,7 +186,7 @@ public class AppController {
 		LCSF<Integer, Integer> selectedLCSF;
 		GLCSF<Integer, Integer> selectedGLCSF;
 		List<List<CredibilityElement<Integer>>> kernels;
-		List<CredibilityElement<Integer>> tsf, rsf, lcsf_glcsf;
+		List<CredibilityElement<Integer>> tsf, lsf, lcsf_glcsf;
 		
 		co1 = cb.getCredibilityOrder(context1);
 		co2 = cb.getCredibilityOrder(context2);
@@ -194,7 +198,7 @@ public class AppController {
 		tsf = selectedTSF.select(kernels);
 		
 		selectedLSF = new LSF<Integer, Integer>(new DefaultComparator<Integer>());
-		rsf = selectedLSF.select(kernels);
+		lsf = selectedLSF.select(kernels);
 
 		if(isRevision){
 			selectedLCSF = new LCSF<Integer, Integer>(new DefaultComparator<Integer>());
@@ -205,7 +209,7 @@ public class AppController {
 			lcsf_glcsf = selectedGLCSF.select(kernels);
 		}
 
-		view.drawSimpleRevision(co1.getGraphRepresentation(), co2.getGraphRepresentation(), kernels, tsf, rsf, lcsf_glcsf);
+		view.drawSimpleRevision(co1.getGraphRepresentation(), co2.getGraphRepresentation(), kernels, tsf, lsf, lcsf_glcsf);
 		String operationString;
 
 		// Modified code merge ---------------------------------

@@ -57,7 +57,7 @@ public class SimpleAppView {
 	public static final String aLabel = new String(Character.toChars(01661)); // alpha
 	public static final String bLabel = new String(Character.toChars(01662)); // beta
 	public static final String revisionLabel = new String(Character.toChars(120495)); // Revision operator
-	public static final String mergeLabel = new String(Character.toChars(934)); // Revision operator
+	public static final String mergeLabel = new String(Character.toChars(934)); // Merge operator
 	// TODO circulo con punto para merge
 
 	public static final String waitingInitializationLabel = new String("... Waiting for Credibility Orders ...");
@@ -85,8 +85,8 @@ public class SimpleAppView {
 	
 	// Menu Elements
 	private JMenuBar menuBar;
-	private JMenu menuCredibilityOrder, menuOperators, menuHelp, menuOpen, menuRuningExample, menuSavedBase;
-	private JMenuItem menuItemDefaultBase, menuItemAddOrder, menuItemExport, menuItemExit, menuItemExample1, menuItemExample2, menuItemExample7, menuItemLoadOrder;
+	private JMenu menuCredibilityOrder, menuOperators, menuHelp, menuOpen, menuRuningExample, menuSavedBase, menuExport, menuExportRevisionOrder, menuExportMergeOrder;
+	private JMenuItem menuItemDefaultBase, menuItemAddOrder, menuItemExportRevisionTSF, menuItemExportRevisionLSF, menuItemExportRevisionLCSF, menuItemExportMergeTSF, menuItemExportMergeLSF, menuItemExportMergeGLCSF, menuItemExit, menuItemExample1, menuItemExample2, menuItemExample7, menuItemLoadOrder;
 	private JMenuItem menuItemRevisionOperator;
 	private JMenuItem menuItemMergeOperator;
 	private JMenuItem menuItemUserManual, menuItemAboutVersion, menuItemPoweredBy;
@@ -118,6 +118,8 @@ public class SimpleAppView {
 	
 	private mxHierarchicalLayout layoutOrderA, layoutOrderB;
 	private mxHierarchicalLayout layoutRevision, layoutRevisionTSF, layoutRevisionRSF, layoutRevisionLCSF_GLCSF;
+
+	private SimpleDirectedGraph<Integer, DefaultEdge> union, union_tsf, union_lsf, union_lcsf_glcsf;
 
 	public SimpleAppView(AppController l) {
 		appController = l;
@@ -181,7 +183,7 @@ public class SimpleAppView {
         menuItemDefaultBase.setToolTipText("Create two empty credibility orders.");
         menuItemAddOrder = new JMenuItem("Add Credibility Order...");
         menuItemAddOrder.setToolTipText("Create an empty credibility order.");
-        menuItemExport = new JMenuItem("Export Orders...");
+        menuExport = new JMenu("Export Orders...");
         menuItemExit = new JMenuItem("Exit");
         
         menuRuningExample = new JMenu("Running examples");
@@ -202,10 +204,29 @@ public class SimpleAppView {
         menuCredibilityOrder.add(new JSeparator());
         menuCredibilityOrder.add(menuItemDefaultBase);
         menuCredibilityOrder.add(menuItemAddOrder);
-        menuCredibilityOrder.add(menuItemExport);
+        menuCredibilityOrder.add(menuExport);
         menuCredibilityOrder.add(new JSeparator());
         menuCredibilityOrder.add(menuItemExit);
-        
+
+		menuExportRevisionOrder = new JMenu("Save "+ aLabel + " " + revisionLabel + " " + bLabel + " applying...");
+		menuItemExportRevisionTSF = new JMenuItem("TSF");
+		menuItemExportRevisionLSF = new JMenuItem("LSF");
+		menuItemExportRevisionLCSF = new JMenuItem("LCSF");
+		menuExportRevisionOrder.add(menuItemExportRevisionTSF);
+		menuExportRevisionOrder.add(menuItemExportRevisionLSF);
+		menuExportRevisionOrder.add(menuItemExportRevisionLCSF);
+
+		menuExportMergeOrder = new JMenu("Save "+ aLabel + " " + mergeLabel + " " + bLabel + " applying...");
+		menuItemExportMergeTSF = new JMenuItem("TSF");
+		menuItemExportMergeLSF = new JMenuItem("LSF");
+		menuItemExportMergeGLCSF = new JMenuItem("GLCSF");
+		menuExportMergeOrder.add(menuItemExportMergeTSF);
+		menuExportMergeOrder.add(menuItemExportMergeLSF);
+		menuExportMergeOrder.add(menuItemExportMergeGLCSF);
+
+		menuExport.add(menuExportRevisionOrder);
+		menuExport.add(menuExportMergeOrder);
+
         // Operators Menu Bar
         menuItemRevisionOperator = new JMenuItem("Revision ("+ aLabel + " " + revisionLabel + " " + bLabel + ")");
 		menuItemMergeOperator = new JMenuItem("Merge ("+ aLabel + " " + mergeLabel + " " + bLabel + ")");
@@ -224,10 +245,10 @@ public class SimpleAppView {
         menuHelp.add(menuItemPoweredBy);
         
         // Disabled options in this version
-        menuItemExport.setEnabled(false);
-        //menuSavedBase.setEnabled(false);
         menuItemUserManual.setEnabled(false);
         menuItemAboutVersion.setEnabled(false);
+		menuExportRevisionOrder.setEnabled(false);
+		menuExportMergeOrder.setEnabled(false);
 	}
 	
 	protected void initInformationPanel() {
@@ -409,7 +430,52 @@ public class SimpleAppView {
 					JOptionPane.showMessageDialog(null, "Must select two files, one represents " + aLabel + " and the other " + bLabel + " credibility orders. ", "Failed Request", JOptionPane.ERROR_MESSAGE);
 			}
 		});
-		
+
+		ActionListener actionListenerTSF = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String name = JOptionPane.showInputDialog("Save file with the name:", "");
+				String savePath = FileSelector.showFolderChooser();
+				if(savePath != null)
+					appController.saveCredibilityBaseDataIntoFiles(savePath, name, union_tsf);
+				else
+					JOptionPane.showMessageDialog(null, "Must select a folder to save " + aLabel + " and " + bLabel + " credibility orders. ", "Failed Request", JOptionPane.ERROR_MESSAGE);
+			}
+		};
+
+		menuItemExportRevisionTSF.addActionListener(actionListenerTSF);
+		menuItemExportMergeTSF.addActionListener(actionListenerTSF);
+
+		ActionListener actionListenerLSF = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String name = JOptionPane.showInputDialog("Save file with the name:", "");
+				String savePath = FileSelector.showFolderChooser();
+				if(savePath != null)
+					appController.saveCredibilityBaseDataIntoFiles(savePath, name, union_lsf);
+				else
+					JOptionPane.showMessageDialog(null, "Must select a folder to save " + aLabel + " and " + bLabel + " credibility orders. ", "Failed Request", JOptionPane.ERROR_MESSAGE);
+			}
+		};
+
+		menuItemExportRevisionLSF.addActionListener(actionListenerLSF);
+		menuItemExportMergeLSF.addActionListener(actionListenerLSF);
+
+		ActionListener actionListenerLCSF_GLCSF = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String name = JOptionPane.showInputDialog("Save file with the name:", "");
+				String savePath = FileSelector.showFolderChooser();
+				if(savePath != null)
+					appController.saveCredibilityBaseDataIntoFiles(savePath, name, union_lcsf_glcsf);
+				else
+					JOptionPane.showMessageDialog(null, "Must select a folder to save " + aLabel + " and " + bLabel + " credibility orders. ", "Failed Request", JOptionPane.ERROR_MESSAGE);
+			}
+		};
+
+		menuItemExportRevisionLCSF.addActionListener(actionListenerLCSF_GLCSF);
+		menuItemExportMergeGLCSF.addActionListener(actionListenerLCSF_GLCSF);
+
 		menuItemExit.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -426,6 +492,8 @@ public class SimpleAppView {
 					contextB = Integer.parseInt(comboSelectOrderB.getItemAt(comboSelectOrderB.getSelectedIndex()));
 					if (contextA != contextB) {
 						appController.applySelectionFunctions(contextA, contextB, true);
+						menuExportRevisionOrder.setEnabled(true);
+						menuExportMergeOrder.setEnabled(false);
 					}else {
 						JOptionPane.showMessageDialog(null, "The selected " + aLabel + " and " + bLabel + " credibility orders must be different. ", "Failed Request", JOptionPane.ERROR_MESSAGE);
 					}
@@ -442,6 +510,8 @@ public class SimpleAppView {
 					contextB = Integer.parseInt(comboSelectOrderB.getItemAt(comboSelectOrderB.getSelectedIndex()));
 					if (contextA != contextB) {
 						appController.applySelectionFunctions(contextA, contextB, false);
+						menuExportRevisionOrder.setEnabled(false);
+						menuExportMergeOrder.setEnabled(true);
 					}else {
 						JOptionPane.showMessageDialog(null, "The selected " + aLabel + " and " + bLabel + " credibility orders must be different. ", "Failed Request", JOptionPane.ERROR_MESSAGE);
 					}
@@ -754,7 +824,6 @@ public class SimpleAppView {
 		}
 		// ---------------------------------------------------
 
-		SimpleDirectedGraph<Integer, DefaultEdge> union, union_tsf, union_lsf, union_lcsf_glcsf;
 		ListenableGraph<Integer, DefaultEdge> graph, graph_tsf, graph_lsf, graph_lcsf_glcsf;
 		HashMap<DefaultEdge, mxICell> map_edge_to_cell_merge, map_edge_to_cell_tsf, map_edge_to_cell_lsf, map_edge_to_cell_lcsf_glcsf;
 		Set<DefaultEdge> edgesGA;

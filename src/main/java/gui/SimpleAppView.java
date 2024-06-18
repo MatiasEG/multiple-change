@@ -86,7 +86,7 @@ public class SimpleAppView {
 	// Menu Elements
 	private JMenuBar menuBar;
 	private JMenu menuCredibilityOrder, menuOperators, menuHelp, menuOpen, menuRuningExample, menuSavedBase, menuExport, menuExportRevisionOrder, menuExportMergeOrder;
-	private JMenuItem menuItemDefaultBase, menuItemAddOrder, menuItemExportRevisionTSF, menuItemExportRevisionLSF, menuItemExportRevisionLCSF, menuItemExportMergeTSF, menuItemExportMergeLSF, menuItemExportMergeGLCSF, menuItemExit, menuItemExample1, menuItemExample2, menuItemExample7, menuItemLoadOrder;
+	private JMenuItem menuItemDefaultBase, menuItemAddOrder, menuItemExportRevision, menuItemExportRevisionTSF, menuItemExportRevisionLSF, menuItemExportRevisionLCSF, menuItemExportMerge, menuItemExportMergeTSF, menuItemExportMergeLSF, menuItemExportMergeGLCSF, menuItemExit, menuItemExample1, menuItemExample2, menuItemExample7, menuItemLoadO1O2, menuItemLoadOrder;
 	private JMenuItem menuItemRevisionOperator;
 	private JMenuItem menuItemMergeOperator;
 	private JMenuItem menuItemUserManual, menuItemAboutVersion, menuItemPoweredBy;
@@ -191,7 +191,8 @@ public class SimpleAppView {
 		menuItemExample1 = new JMenuItem("Example 1");
         menuItemExample2 = new JMenuItem("Example 2");
         menuItemExample7 = new JMenuItem("Example 7");
-		menuItemLoadOrder = new JMenuItem("Load "+aLabel+" & "+bLabel);
+		menuItemLoadO1O2 = new JMenuItem("Load "+aLabel+" & "+bLabel);
+		menuItemLoadOrder = new JMenuItem("Load Credibility Base");
 
         menuOpen.add(menuRuningExample);
         menuOpen.add(menuSavedBase);
@@ -199,6 +200,7 @@ public class SimpleAppView {
         menuRuningExample.add(menuItemExample2);
         menuRuningExample.add(menuItemExample7);
 		menuSavedBase.add(menuItemLoadOrder);
+		menuSavedBase.add(menuItemLoadO1O2);
                 
         menuCredibilityOrder.add(menuOpen);
         menuCredibilityOrder.add(new JSeparator());
@@ -209,17 +211,21 @@ public class SimpleAppView {
         menuCredibilityOrder.add(menuItemExit);
 
 		menuExportRevisionOrder = new JMenu("Save "+ aLabel + " " + revisionLabel + " " + bLabel + " applying...");
+		menuItemExportRevision = new JMenuItem("All graphs revised");
 		menuItemExportRevisionTSF = new JMenuItem("TSF");
 		menuItemExportRevisionLSF = new JMenuItem("LSF");
 		menuItemExportRevisionLCSF = new JMenuItem("LCSF");
+		menuExportRevisionOrder.add(menuItemExportRevision);
 		menuExportRevisionOrder.add(menuItemExportRevisionTSF);
 		menuExportRevisionOrder.add(menuItemExportRevisionLSF);
 		menuExportRevisionOrder.add(menuItemExportRevisionLCSF);
 
 		menuExportMergeOrder = new JMenu("Save "+ aLabel + " " + mergeLabel + " " + bLabel + " applying...");
+		menuItemExportMerge = new JMenuItem("All graphs merged");
 		menuItemExportMergeTSF = new JMenuItem("TSF");
 		menuItemExportMergeLSF = new JMenuItem("LSF");
 		menuItemExportMergeGLCSF = new JMenuItem("GLCSF");
+		menuExportMergeOrder.add(menuItemExportMerge);
 		menuExportMergeOrder.add(menuItemExportMergeTSF);
 		menuExportMergeOrder.add(menuItemExportMergeLSF);
 		menuExportMergeOrder.add(menuItemExportMergeGLCSF);
@@ -419,7 +425,7 @@ public class SimpleAppView {
 			}
 		});
 
-		menuItemLoadOrder.addActionListener(new ActionListener() {
+		menuItemLoadO1O2.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String pathA = FileSelector.showFileChooser();
@@ -431,14 +437,46 @@ public class SimpleAppView {
 			}
 		});
 
+		menuItemLoadOrder.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String path = FileSelector.showFileChooser();
+				if(path != null)
+					appController.readFromFileNewCredibilityBase(path, null);
+				else
+					JOptionPane.showMessageDialog(null, "Must select a file that contains a credibility base. ", "Failed Request", JOptionPane.ERROR_MESSAGE);
+			}
+		});
+
+		ActionListener actionListenerAllGraphs = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String name = JOptionPane.showInputDialog("Save file with the name:", "");
+				String savePath = FileSelector.showFolderChooser();
+				if(savePath != null){
+					List<SimpleDirectedGraph<Integer, DefaultEdge>> listGraph = new ArrayList<>();
+					listGraph.add(union_tsf);
+					listGraph.add(union_lsf);
+					listGraph.add(union_lcsf_glcsf);
+					appController.saveCredibilityBaseDataIntoFiles(savePath, name, listGraph);
+				}else
+					JOptionPane.showMessageDialog(null, "Must select a folder to save " + aLabel + " and " + bLabel + " credibility orders. ", "Failed Request", JOptionPane.ERROR_MESSAGE);
+			}
+		};
+
+		menuItemExportRevision.addActionListener(actionListenerAllGraphs);
+		menuItemExportMerge.addActionListener(actionListenerAllGraphs);
+
 		ActionListener actionListenerTSF = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String name = JOptionPane.showInputDialog("Save file with the name:", "");
 				String savePath = FileSelector.showFolderChooser();
-				if(savePath != null)
-					appController.saveCredibilityBaseDataIntoFiles(savePath, name, union_tsf);
-				else
+				if(savePath != null){
+					List<SimpleDirectedGraph<Integer, DefaultEdge>> listGraph = new ArrayList<>();
+					listGraph.add(union_tsf);
+					appController.saveCredibilityBaseDataIntoFiles(savePath, name, listGraph);
+				}else
 					JOptionPane.showMessageDialog(null, "Must select a folder to save " + aLabel + " and " + bLabel + " credibility orders. ", "Failed Request", JOptionPane.ERROR_MESSAGE);
 			}
 		};
@@ -451,9 +489,11 @@ public class SimpleAppView {
 			public void actionPerformed(ActionEvent e) {
 				String name = JOptionPane.showInputDialog("Save file with the name:", "");
 				String savePath = FileSelector.showFolderChooser();
-				if(savePath != null)
-					appController.saveCredibilityBaseDataIntoFiles(savePath, name, union_lsf);
-				else
+				if(savePath != null){
+					List<SimpleDirectedGraph<Integer, DefaultEdge>> listGraph = new ArrayList<>();
+					listGraph.add(union_lsf);
+					appController.saveCredibilityBaseDataIntoFiles(savePath, name, listGraph);
+				}else
 					JOptionPane.showMessageDialog(null, "Must select a folder to save " + aLabel + " and " + bLabel + " credibility orders. ", "Failed Request", JOptionPane.ERROR_MESSAGE);
 			}
 		};
@@ -466,9 +506,11 @@ public class SimpleAppView {
 			public void actionPerformed(ActionEvent e) {
 				String name = JOptionPane.showInputDialog("Save file with the name:", "");
 				String savePath = FileSelector.showFolderChooser();
-				if(savePath != null)
-					appController.saveCredibilityBaseDataIntoFiles(savePath, name, union_lcsf_glcsf);
-				else
+				if(savePath != null){
+					List<SimpleDirectedGraph<Integer, DefaultEdge>> listGraph = new ArrayList<>();
+					listGraph.add(union_lcsf_glcsf);
+					appController.saveCredibilityBaseDataIntoFiles(savePath, name, listGraph);
+				}else
 					JOptionPane.showMessageDialog(null, "Must select a folder to save " + aLabel + " and " + bLabel + " credibility orders. ", "Failed Request", JOptionPane.ERROR_MESSAGE);
 			}
 		};

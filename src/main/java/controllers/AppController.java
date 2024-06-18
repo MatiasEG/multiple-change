@@ -121,8 +121,8 @@ public class AppController {
 
 	}
 
-	public void saveCredibilityBaseDataIntoFiles(String folderPath, String name, SimpleDirectedGraph<Integer, DefaultEdge> graph) {
-		FileReaderCredibilityOrder.writeCredibilityBaseFromData(folderPath, name, graph);
+	public void saveCredibilityBaseDataIntoFiles(String folderPath, String name, List<SimpleDirectedGraph<Integer, DefaultEdge>> listGraph) {
+		FileReaderCredibilityOrder.writeCredibilityBaseFromData(folderPath, name, listGraph);
 	}
 	
 	//----------------------------------------------------

@@ -350,8 +350,10 @@ public class SimpleAppView {
 		
         // Kernels Tab Panel
         kernelPanel = makeEmptyPanel(waitingOperationLabel);
-        kernelTabbedPanel.addTab(bLabel+"-inconsistent kernels of "+aLabel, null, kernelPanel, "Viewing the kernel set");
-        
+        // Modified code merge ---------------------------------
+        kernelTabbedPanel.addTab("...", null, kernelPanel, "Defined when an operation is executed");
+ 		// ---------------------------------------------------        
+ 		
         topRightMainTabPanel.add(unionTabbedPanel);
         topRightMainTabPanel.add(kernelTabbedPanel);
         
@@ -857,12 +859,18 @@ public class SimpleAppView {
 
 			bottomRightMainTabbedPane.setTitleAt(2, "Revision by LCSF");
 			bottomRightMainTabbedPane.setToolTipTextAt(2, "Operation applying Least Credible Selection Function");
+			
+			kernelTabbedPanel.setTitleAt(0, bLabel+"-inconsistent kernels of "+aLabel);
+ 			kernelTabbedPanel.setToolTipText("Viewing the kernel set");
 		}else{
 			bottomRightMainTabbedPane.setTitleAt(0, "Merge by TSF");
 			bottomRightMainTabbedPane.setTitleAt(1, "Merge by LSF");
 
 			bottomRightMainTabbedPane.setTitleAt(2, "Merge by GLCSF");
 			bottomRightMainTabbedPane.setToolTipTextAt(2, "Operation applying Generalized Least Credible Selection Function");
+			
+			kernelTabbedPanel.setTitleAt(0, "Conflict sets");
+ 			kernelTabbedPanel.setToolTipText("Viewing the conflict set");
 		}
 		// ---------------------------------------------------
 
@@ -999,7 +1007,13 @@ public class SimpleAppView {
 		kernelsTextArea.setEditable(false);
 
 		index = 0;
-		text = new String("Kernels Set (K = { Ki | Ki is a Kernel}) \n \n");
+		// Modified code merge ---------------------------------
+		if(appController.isRevision()){
+			text = new String("Kernels Set (K = { Ki | Ki is a Kernel}) \n \n");
+		}else{
+			text = new String("");
+		}
+		// ---------------------------------------------------
 		cellListMerge = new ArrayList<mxICell>();
 
 		for(List<CredibilityElement<Integer>> kernel : kernels) {

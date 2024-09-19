@@ -55,7 +55,7 @@ public class GLCSF<C, A> implements IncisionFunction<A, C> {
 			// TODO ask about this casting
 			if (filter1.containsCredibilityElement((CredibilityElement<Integer>) element)) // (actual > prev) ; (prev-->actual)
 				kernel1.add(new CredibilityElement<A>(most, less));
-			else
+			if (filter2.containsCredibilityElement((CredibilityElement<Integer>) element)) // (actual > prev) ; (prev-->actual)
 				kernel2.add(new CredibilityElement<A>(most, less));
 		}
 

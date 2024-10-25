@@ -188,9 +188,9 @@ public class SimpleAppView {
         
         menuRuningExample = new JMenu("Running examples");
         menuSavedBase = new JMenu("Saved orders...");
-		menuItemExample1 = new JMenuItem("Example 1");
-        menuItemExample2 = new JMenuItem("Example 2");
-        menuItemExample7 = new JMenuItem("Example 7");
+		menuItemExample1 = new JMenuItem("Example 1 (IJAR 2022)");
+        menuItemExample2 = new JMenuItem("Example 2 (IJAR 2022)");
+        menuItemExample7 = new JMenuItem("Example 7 (IJAR 2022)");
 		menuItemLoadO1O2 = new JMenuItem("Load "+aLabel+" & "+bLabel);
 		menuItemLoadOrder = new JMenuItem("Load Credibility Base");
 
@@ -1038,9 +1038,15 @@ public class SimpleAppView {
 			text += " } \n";
 		}
 
+		// Modified code merge ---------------------------------
 		if (kernels.isEmpty()) {
-			text += "The kernel set is empty.";
+			if(appController.isRevision()){
+				text += "The kernel set is empty.";
+			}else {
+				text += "The set is empty.";
+			}
 		}
+		// ---------------------------------------------------
 
 		kernelsTextArea.setText(text);
 		kernelPanel.removeAll();

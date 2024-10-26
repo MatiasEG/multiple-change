@@ -154,7 +154,9 @@ public class AppController {
 			cb.addCredibilityObject(agentA, agentB, context);
 			view.resetRevisionPanels();
 			view.setLeftInformation("The credibility element "+agentA+">"+agentB+" in context "+context+" was added.", SimpleAppView.TEXT_SUCCESS);
-			view.drawGraphInVisualizer(credibility_order_tab, cb.getCredibilityOrder(context).getGraphRepresentation());
+			if(credibility_order_tab!=0) {
+				view.drawGraphInVisualizer(credibility_order_tab, cb.getCredibilityOrder(context).getGraphRepresentation());
+			}
 		}catch(IllegalArgumentException e) {
 			view.setLeftInformation("The credibility element "+agentA+">"+agentB+" in context "+context+" was not added.", SimpleAppView.TEXT_ERROR);
 		}
@@ -242,4 +244,5 @@ public class AppController {
 	public boolean isRevision(){
 		return isRevision;
 	}
+	
 }

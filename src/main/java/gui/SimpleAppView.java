@@ -85,8 +85,8 @@ public class SimpleAppView {
 	
 	// Menu Elements
 	private JMenuBar menuBar;
-	private JMenu menuCredibilityOrder, menuOperators, menuHelp, menuOpen, menuRuningExample, menuSavedBase, menuExport, menuExportRevisionOrder, menuExportMergeOrder;
-	private JMenuItem menuItemDefaultBase, menuItemAddOrder, menuItemExportRevision, menuItemExportRevisionTSF, menuItemExportRevisionLSF, menuItemExportRevisionLCSF, menuItemExportMerge, menuItemExportMergeTSF, menuItemExportMergeLSF, menuItemExportMergeGLCSF, menuItemExit, menuItemExample1, menuItemExample2, menuItemExample7, menuItemLoadO1O2, menuItemLoadOrder;
+	private JMenu menuCredibilityOrder, menuOperators, menuHelp, menuOpen, menuRuningExample, menuSavedBase, menuAddResultingOrder, menuExport, menuExportRevisionOrder, menuExportMergeOrder;
+	private JMenuItem menuItemDefaultBase, menuItemAddOrder, menuItemAddResultingOrderTSF, menuItemAddResultingOrderLSF, menuItemAddResultingOrderLCSFGLCSF, menuItemExportRevision, menuItemExportRevisionTSF, menuItemExportRevisionLSF, menuItemExportRevisionLCSF, menuItemExportMerge, menuItemExportMergeTSF, menuItemExportMergeLSF, menuItemExportMergeGLCSF, menuItemExit, menuItemExample1, menuItemExample2, menuItemExample7, menuItemLoadO1O2, menuItemLoadOrder;
 	private JMenuItem menuItemRevisionOperator;
 	private JMenuItem menuItemMergeOperator;
 	private JMenuItem menuItemUserManual, menuItemAboutVersion, menuItemPoweredBy;
@@ -120,7 +120,7 @@ public class SimpleAppView {
 	private mxHierarchicalLayout layoutRevision, layoutRevisionTSF, layoutRevisionRSF, layoutRevisionLCSF_GLCSF;
 
 	private SimpleDirectedGraph<Integer, DefaultEdge> union, union_tsf, union_lsf, union_lcsf_glcsf;
-
+	
 	public SimpleAppView(AppController l) {
 		appController = l;
 		
@@ -183,6 +183,9 @@ public class SimpleAppView {
         menuItemDefaultBase.setToolTipText("Create two empty credibility orders.");
         menuItemAddOrder = new JMenuItem("Add Credibility Order...");
         menuItemAddOrder.setToolTipText("Create an empty credibility order.");
+		// Modified code merge ---------------------------------
+        menuAddResultingOrder = new JMenu("Add resulting credibility order...");
+		// ---------------------------------------------------
         menuExport = new JMenu("Export Orders...");
         menuItemExit = new JMenuItem("Exit");
         
@@ -206,6 +209,9 @@ public class SimpleAppView {
         menuCredibilityOrder.add(new JSeparator());
         menuCredibilityOrder.add(menuItemDefaultBase);
         menuCredibilityOrder.add(menuItemAddOrder);
+		// Modified code merge ---------------------------------
+        menuCredibilityOrder.add(menuAddResultingOrder);
+		// ---------------------------------------------------
         menuCredibilityOrder.add(menuExport);
         menuCredibilityOrder.add(new JSeparator());
         menuCredibilityOrder.add(menuItemExit);
@@ -220,6 +226,19 @@ public class SimpleAppView {
 		menuExportRevisionOrder.add(menuItemExportRevisionLSF);
 		menuExportRevisionOrder.add(menuItemExportRevisionLCSF);
 
+		// Modified code merge ---------------------------------
+		menuItemAddResultingOrderTSF = new JMenuItem("Add TSF resulting credibility order.");
+        menuItemAddResultingOrderTSF.setToolTipText("Add to the credibility base the actual TSF resulting credibility order.");
+        menuItemAddResultingOrderLSF = new JMenuItem("Add LSF resulting credibility order.");
+        menuItemAddResultingOrderLSF.setToolTipText("Add to the credibility base the actual LSF resulting credibility order.");
+        menuItemAddResultingOrderLCSFGLCSF = new JMenuItem("Add LCSF/GLCSF resulting credibility order.");
+        menuItemAddResultingOrderLCSFGLCSF.setToolTipText("Add to the credibility base the actual LCSF/GLCSF resulting credibility order.");
+        
+        menuAddResultingOrder.add(menuItemAddResultingOrderTSF);
+        menuAddResultingOrder.add(menuItemAddResultingOrderLSF);
+        menuAddResultingOrder.add(menuItemAddResultingOrderLCSFGLCSF);
+		// ---------------------------------------------------
+		
 		menuExportMergeOrder = new JMenu("Save "+ aLabel + " " + mergeLabel + " " + bLabel + " applying...");
 		menuItemExportMerge = new JMenuItem("All graphs merged");
 		menuItemExportMergeTSF = new JMenuItem("TSF");
@@ -405,6 +424,89 @@ public class SimpleAppView {
 				
 			}
 		});
+		
+		// Modified code merge ---------------------------------
+		menuItemAddResultingOrderTSF.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int contextNumber;
+				String text = JOptionPane.showInputDialog("Type the number (<="+AppController.MAX_CONTEXT_ID+") of the credibility order to be added");
+				if (text != null && text.length() > 0) {
+					try{
+						contextNumber = Integer.parseInt(text);
+						if (contextNumber < AppController.MAX_CONTEXT_ID) {
+							appController.addCredibilityOrder(contextNumber);
+							for(DefaultEdge de : getUnionTSF().edgeSet()) {
+								String edge = de.toString();
+								String[] parts = edge.substring(1, edge.length() - 1).split(" : ");
+								String source = parts[0].trim(); // value1
+								String target = parts[1].trim(); // value2
+								appController.addCredibilityElement(Integer.parseInt(target), Integer.parseInt(source), contextNumber, 0);
+					        }
+						}else {
+							JOptionPane.showMessageDialog(null, "The number is not correct", "Failed Request", JOptionPane.ERROR_MESSAGE);
+						}
+					}catch(NumberFormatException ex){
+						JOptionPane.showMessageDialog(null, "The number is not correct", "Failed Request", JOptionPane.ERROR_MESSAGE);
+					}
+				}
+			}
+		});
+		
+		menuItemAddResultingOrderLSF.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int contextNumber;
+				String text = JOptionPane.showInputDialog("Type the number (<="+AppController.MAX_CONTEXT_ID+") of the credibility order to be added");
+				if (text != null && text.length() > 0) {
+					try{
+						contextNumber = Integer.parseInt(text);
+						if (contextNumber < AppController.MAX_CONTEXT_ID) {
+							appController.addCredibilityOrder(contextNumber);
+							for(DefaultEdge de : getUnionLSF().edgeSet()) {
+								String edge = de.toString();
+								String[] parts = edge.substring(1, edge.length() - 1).split(" : ");
+								String source = parts[0].trim(); // value1
+								String target = parts[1].trim(); // value2
+								appController.addCredibilityElement(Integer.parseInt(target), Integer.parseInt(source), contextNumber, 0);
+					        }
+						}else {
+							JOptionPane.showMessageDialog(null, "The number is not correct", "Failed Request", JOptionPane.ERROR_MESSAGE);
+						}
+					}catch(NumberFormatException ex){
+						JOptionPane.showMessageDialog(null, "The number is not correct", "Failed Request", JOptionPane.ERROR_MESSAGE);
+					}
+				}
+			}
+		});
+		
+		menuItemAddResultingOrderLCSFGLCSF.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int contextNumber;
+				String text = JOptionPane.showInputDialog("Type the number (<="+AppController.MAX_CONTEXT_ID+") of the credibility order to be added");
+				if (text != null && text.length() > 0) {
+					try{
+						contextNumber = Integer.parseInt(text);
+						if (contextNumber < AppController.MAX_CONTEXT_ID) {
+							appController.addCredibilityOrder(contextNumber);
+							for(DefaultEdge de : getUnionLCSF_GLCSF().edgeSet()) {
+								String edge = de.toString();
+								String[] parts = edge.substring(1, edge.length() - 1).split(" : ");
+								String source = parts[0].trim(); // value1
+								String target = parts[1].trim(); // value2
+								appController.addCredibilityElement(Integer.parseInt(target), Integer.parseInt(source), contextNumber, 0);
+					        }
+						}else {
+							JOptionPane.showMessageDialog(null, "The number is not correct", "Failed Request", JOptionPane.ERROR_MESSAGE);
+						}
+					}catch(NumberFormatException ex){
+						JOptionPane.showMessageDialog(null, "The number is not correct", "Failed Request", JOptionPane.ERROR_MESSAGE);
+					}
+				}
+			}
+		});
+		// ---------------------------------------------------
 		
 		menuItemExample1.addActionListener(new ActionListener() {
 			@Override
@@ -931,7 +1033,7 @@ public class SimpleAppView {
 		graph_tsf = new DefaultListenableGraph<Integer, DefaultEdge>(union_tsf);
 		graph_lsf = new DefaultListenableGraph<Integer, DefaultEdge>(union_lsf);
 		graph_lcsf_glcsf = new DefaultListenableGraph<Integer, DefaultEdge>(union_lcsf_glcsf);
-
+		
 		// Color all edges with GB edges color
 		adapterUnion = new JGraphXAdapter<Integer, DefaultEdge>(graph);
 		adapterRevisionTSF = new JGraphXAdapter<Integer, DefaultEdge>(graph_tsf);
@@ -1094,5 +1196,19 @@ public class SimpleAppView {
 		if (comboSelectOrderB.getItemCount() > 0)
 			comboSelectOrderB.setSelectedIndex( (comboSelectOrderB.getItemCount() > 1) ? 1 : 0);
 	}
+
+	// Modified code merge ---------------------------------
+	private SimpleDirectedGraph<Integer, DefaultEdge> getUnionTSF(){
+		return this.union_tsf;
+	}
+	
+	private SimpleDirectedGraph<Integer, DefaultEdge> getUnionLSF(){
+		return this.union_lsf;
+	}
+	
+	private SimpleDirectedGraph<Integer, DefaultEdge> getUnionLCSF_GLCSF(){
+		return this.union_lcsf_glcsf;
+	}
+	// ---------------------------------------------------
 
 }

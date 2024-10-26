@@ -13,7 +13,6 @@ import incisionFunctions.LCSF;
 import incisionFunctions.LSF;
 import incisionFunctions.TSF;
 import incisionFunctions.GLCSF;
-import org.jgrapht.graph.SimpleDirectedGraph;
 import sets.CredibilityBase;
 import sets.CredibilityElement;
 import sets.CredibilityOrder;
@@ -121,8 +120,8 @@ public class AppController {
 
 	}
 
-	public void saveCredibilityBaseDataIntoFiles(String folderPath, String name, List<SimpleDirectedGraph<Integer, DefaultEdge>> listGraph) {
-		FileReaderCredibilityOrder.writeCredibilityBaseFromData(folderPath, name, listGraph);
+	public void saveCredibilityBaseDataIntoFiles(String folderPath, String name) {
+		FileReaderCredibilityOrder.writeCredibilityBaseFromData(folderPath, name, cb.getCredibilityOrders());
 	}
 	
 	//----------------------------------------------------

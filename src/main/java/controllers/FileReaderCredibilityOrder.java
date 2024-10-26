@@ -1,11 +1,11 @@
 package controllers;
 
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.graph.SimpleDirectedGraph;
 import sets.CredibilityBase;
+import sets.CredibilityElement;
+import sets.CredibilityOrder;
 
 import java.io.*;
-import java.util.List;
+import java.util.Set;
 
 public class FileReaderCredibilityOrder {
 
@@ -71,32 +71,29 @@ public class FileReaderCredibilityOrder {
         return true;
     }
 
-    public static void writeCredibilityBaseFromData(String folderPath, String name, List<SimpleDirectedGraph<Integer, DefaultEdge>> listGraph){
+    public static void writeCredibilityBaseFromData(String folderPath, String name, Set<CredibilityOrder<Integer, Integer>> credibilityOrders){
         String fileName = name+".csv";
         String filePath = folderPath+"\\"+fileName;
 
-        createFile(filePath, listGraph);
+        createFile(filePath, credibilityOrders);
     }
 
-    private static void createFile(String filePath, List<SimpleDirectedGraph<Integer, DefaultEdge>> listGraph){
+    private static void createFile(String filePath, Set<CredibilityOrder<Integer, Integer>> credibilityOrders){
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
 
             writer.write("context;credibility_order");
             writer.newLine();
 
             int context = 1;
-            for(SimpleDirectedGraph<Integer, DefaultEdge> graph : listGraph){
-                // write data
-                writer.write(context+";");
-                for(DefaultEdge edge: graph.edgeSet()){
-                    writer.write(graph.getEdgeTarget(edge)+">"+graph.getEdgeSource(edge));
+            for(CredibilityOrder<Integer, Integer> co : credibilityOrders) {
+            	writer.write(context+";");
+            	for(CredibilityElement<Integer> ce : co.relationSet()) {
+            		writer.write(ce.getMostCredible()+">"+ce.getLessCredible());
                     writer.write(",");
-                }
-                writer.newLine();
+            	}
+            	writer.newLine();
                 context++;
             }
-
-
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -184,14 +184,14 @@ public class SimpleAppView {
         menuItemAddOrder = new JMenuItem("Add Credibility Order...");
         menuItemAddOrder.setToolTipText("Create an empty credibility order.");
 		// Modified code merge ---------------------------------
-        menuAddResultingOrder = new JMenu("Add resulting credibility order...");
+        menuAddResultingOrder = new JMenu("Add resulting credibility order");
 		// ---------------------------------------------------
         menuItemExport = new JMenuItem("Export Orders...");
         menuItemExport.setToolTipText("Export the complete credibility base.");
         menuItemExit = new JMenuItem("Exit");
         
         menuRuningExample = new JMenu("Running examples");
-        menuItemLoadCredibilityBase = new JMenuItem("Load a localy saved Credibility Base");
+        menuItemLoadCredibilityBase = new JMenuItem("Credibility Base from existing file...");
 		menuItemExample1 = new JMenuItem("Example 1 (IJAR 2022)");
         menuItemExample2 = new JMenuItem("Example 2 (IJAR 2022)");
         menuItemExample7 = new JMenuItem("Example 7 (IJAR 2022)");

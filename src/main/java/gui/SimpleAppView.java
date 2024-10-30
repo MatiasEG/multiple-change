@@ -898,33 +898,33 @@ public class SimpleAppView {
 
         // Remove the selected credibility elements of each selection function
         for(CredibilityElement<Integer> ce : TSF) {
-        	union_tsf.removeEdge(ce.getMostCredible(), ce.getLessCredible());
+        	union_tsf.removeEdge(ce.getLessCredible(), ce.getMostCredible());
         	
-        	if (union_tsf.edgesOf(ce.getLessCredible()).isEmpty())
+        	if (union_lcsf_glcsf.containsVertex(ce.getLessCredible()) && union_tsf.edgesOf(ce.getLessCredible()).isEmpty())
         		union_tsf.removeVertex(ce.getLessCredible());
 
-        	if (union_tsf.edgesOf(ce.getMostCredible()).isEmpty())
+        	if (union_lcsf_glcsf.containsVertex(ce.getMostCredible()) && union_tsf.edgesOf(ce.getMostCredible()).isEmpty())
         		union_tsf.removeVertex(ce.getMostCredible());
         }
 
         for(CredibilityElement<Integer> ce : LSF) {
- 			union_lsf.removeEdge(ce.getMostCredible(), ce.getLessCredible());
+ 			union_lsf.removeEdge(ce.getLessCredible(), ce.getMostCredible());
 
- 			if (union_lsf.edgesOf(ce.getLessCredible()).isEmpty())
+ 			if (union_lcsf_glcsf.containsVertex(ce.getLessCredible()) && union_lsf.edgesOf(ce.getLessCredible()).isEmpty())
  				union_lsf.removeVertex(ce.getLessCredible());
 
-        	if (union_lsf.edgesOf(ce.getMostCredible()).isEmpty())
+        	if (union_lcsf_glcsf.containsVertex(ce.getMostCredible()) && union_lsf.edgesOf(ce.getMostCredible()).isEmpty())
         		union_lsf.removeVertex(ce.getMostCredible());
 
  		}
 
         for(CredibilityElement<Integer> ce : LCSF_GLCSF) {
- 			union_lcsf_glcsf.removeEdge(ce.getMostCredible(), ce.getLessCredible());
+ 			union_lcsf_glcsf.removeEdge(ce.getLessCredible(), ce.getMostCredible());
 
- 			if (union_lcsf_glcsf.edgesOf(ce.getLessCredible()).isEmpty())
+ 			if (union_lcsf_glcsf.containsVertex(ce.getLessCredible()) && union_lcsf_glcsf.edgesOf(ce.getLessCredible()).isEmpty())
  				union_lcsf_glcsf.removeVertex(ce.getLessCredible());
 
-        	if (union_lcsf_glcsf.edgesOf(ce.getMostCredible()).isEmpty())
+        	if (union_lcsf_glcsf.containsVertex(ce.getMostCredible()) && union_lcsf_glcsf.edgesOf(ce.getMostCredible()).isEmpty())
         		union_lcsf_glcsf.removeVertex(ce.getMostCredible());
  		}
 

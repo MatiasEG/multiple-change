@@ -898,7 +898,8 @@ public class SimpleAppView {
 
         // Remove the selected credibility elements of each selection function
         for(CredibilityElement<Integer> ce : TSF) {
-        	union_tsf.removeEdge(ce.getLessCredible(), ce.getMostCredible());
+        	union_tsf.removeEdge(ce.getMostCredible(), ce.getLessCredible());
+        	
         	if (union_tsf.edgesOf(ce.getLessCredible()).isEmpty())
         		union_tsf.removeVertex(ce.getLessCredible());
 
@@ -907,7 +908,7 @@ public class SimpleAppView {
         }
 
         for(CredibilityElement<Integer> ce : LSF) {
- 			union_lsf.removeEdge(ce.getLessCredible(), ce.getMostCredible());
+ 			union_lsf.removeEdge(ce.getMostCredible(), ce.getLessCredible());
 
  			if (union_lsf.edgesOf(ce.getLessCredible()).isEmpty())
  				union_lsf.removeVertex(ce.getLessCredible());
@@ -918,7 +919,7 @@ public class SimpleAppView {
  		}
 
         for(CredibilityElement<Integer> ce : LCSF_GLCSF) {
- 			union_lcsf_glcsf.removeEdge(ce.getLessCredible(), ce.getMostCredible());
+ 			union_lcsf_glcsf.removeEdge(ce.getMostCredible(), ce.getLessCredible());
 
  			if (union_lcsf_glcsf.edgesOf(ce.getLessCredible()).isEmpty())
  				union_lcsf_glcsf.removeVertex(ce.getLessCredible());

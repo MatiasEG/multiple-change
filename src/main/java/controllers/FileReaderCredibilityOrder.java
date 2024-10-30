@@ -84,8 +84,9 @@ public class FileReaderCredibilityOrder {
             writer.write("context;credibility_order");
             writer.newLine();
 
-            int context = 1;
+            int context;
             for(CredibilityOrder<Integer, Integer> co : credibilityOrders) {
+            	context = co.getID();
             	writer.write(context+";");
             	for(CredibilityElement<Integer> ce : co.relationSet()) {
             		writer.write(ce.getMostCredible()+">"+ce.getLessCredible());

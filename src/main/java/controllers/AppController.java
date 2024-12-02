@@ -19,7 +19,7 @@ import sets.CredibilityOrder;
 
 public class AppController {
 	
-	public static final String ACTUAL_VERSION = "1.0.0";
+	public static final String ACTUAL_VERSION = "2.0.0";
 	public static final int MAX_AGENT_ID = 99;
 	public static final int MAX_CONTEXT_ID = 99;
 	

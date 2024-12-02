@@ -863,10 +863,10 @@ public class SimpleAppView {
 			kernelTabbedPanel.setTitleAt(0, bLabel+"-inconsistent kernels of "+aLabel);
  			kernelTabbedPanel.setToolTipText("Viewing the kernel set");
 		}else{
-			bottomRightMainTabbedPane.setTitleAt(0, "Merge by TSF");
-			bottomRightMainTabbedPane.setTitleAt(1, "Merge by LSF");
+			bottomRightMainTabbedPane.setTitleAt(0, "Merging by TSF");
+			bottomRightMainTabbedPane.setTitleAt(1, "Merging by LSF");
 
-			bottomRightMainTabbedPane.setTitleAt(2, "Merge by GLCSF");
+			bottomRightMainTabbedPane.setTitleAt(2, "Merging by GLCSF");
 			bottomRightMainTabbedPane.setToolTipTextAt(2, "Operation applying Generalized Least Credible Selection Function");
 			
 			kernelTabbedPanel.setTitleAt(0, "Conflict sets");
